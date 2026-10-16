@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CBR paso a paso · Ejemplo G-01 (P-20-1) · V1</title>
+<style>
+:root{
+  --ink:#17283b; --paper:#eaeff6; --card:#ffffff; --blue:#1b5fa6; --blue-d:#123f73; --orange:#d9700f;
+  --ok:#2e8b57; --warn:#c99100; --bad:#c0392b; --line:#d3dbe6; --soft:#e8f0fa; --steel:#5a6e85;
+  --m4:#1b5fa6; --m5:#d9700f; --m6:#2e8b57;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --mono:Consolas,"SF Mono","Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);display:flex;flex-direction:column;font-size:16px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+
+/* barras */
+.top{height:50px;flex:none;background:var(--blue-d);color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px}
+.top .brand{font-family:var(--serif);font-weight:700;font-size:1.05rem;white-space:nowrap}
+.top .brand small{font-family:var(--sans);font-weight:400;opacity:.8;margin-left:8px;font-size:.8rem}
+.top select{flex:1;max-width:420px;padding:6px 8px;border-radius:6px;border:0;font-size:.9rem}
+.top .sp{flex:1}
+.btn{background:#fff;color:var(--blue-d);border:0;border-radius:6px;padding:6px 11px;font-size:.85rem;font-weight:600}
+.btn:hover{background:var(--soft)}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.btn.ghost:hover{background:rgba(255,255,255,.14)}
+.badge{background:var(--warn);color:#1d1500;border-radius:10px;padding:0 7px;font-size:.75rem;margin-left:4px;font-weight:700}
+.bot{height:56px;flex:none;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 16px;position:relative}
+.bot .prog{position:absolute;left:0;top:-1px;height:3px;background:var(--orange);width:0;transition:width .25s}
+.bot .cnt{flex:1;text-align:center;font-size:.9rem;color:var(--steel)}
+.nav{background:var(--blue);color:#fff;border:0;border-radius:7px;padding:9px 20px;font-weight:700;font-size:.95rem}
+.nav:hover{background:var(--blue-d)}
+.nav.sec{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+.nav:disabled{opacity:.4;cursor:default}
+
+/* escenario */
+.stage{flex:1;overflow:auto;padding:18px 14px 28px}
+.slide{display:none;max-width:1180px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px 34px 30px;box-shadow:0 1px 3px rgba(23,40,59,.08)}
+.slide.active{display:block}
+.frag{display:none}
+.frag.on{display:block}
+h1,h2,h3{font-family:var(--serif);margin:0 0 .4em;line-height:1.2}
+h1{font-size:2.3rem;color:var(--blue-d)}
+h2{font-size:1.65rem;color:var(--blue-d);border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:14px}
+h3{font-size:1.1rem;color:var(--ink);margin-top:14px}
+p{margin:.45em 0}
+.lead{font-size:1.12rem;color:var(--steel)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.cols.c3{grid-template-columns:repeat(3,1fr)}
+.cols.w21{grid-template-columns:2fr 1fr}
+@media(max-width:900px){.cols,.cols.c3,.cols.w21{grid-template-columns:1fr}.slide{padding:18px}.top .brand small{display:none}}
+.card{background:#f9fbfd;border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+.card.note{background:#fff8ec;border-color:#f0d9a8}
+.card.alert{background:#fdeeee;border-color:#f0b9b3}
+.card.good{background:#eaf6ee;border-color:#b6dfc4}
+.card h3{margin-top:0}
+.src{font-size:.78rem;color:var(--steel);margin-top:16px;border-top:1px dashed var(--line);padding-top:6px}
+
+/* fórmulas */
+.fx{font-family:var(--serif);font-size:1.18rem;background:var(--soft);border-left:4px solid var(--blue);padding:9px 14px;margin:8px 0;border-radius:4px;overflow-x:auto}
+.sub{font-family:var(--mono);font-size:.95rem;background:#fff6e8;border-left:4px solid var(--orange);padding:9px 14px;margin:8px 0;border-radius:4px;overflow-x:auto}
+.res{font-family:var(--mono);font-size:1rem;background:#eaf6ee;border-left:4px solid var(--ok);padding:9px 14px;margin:8px 0;border-radius:4px;overflow-x:auto}
+.cap{font-size:.82rem;color:var(--steel);margin:10px 0 -4px;font-weight:600}
+.fx sub,.sub sub,.res sub{font-size:.7em}
+
+/* tablas */
+.tw{overflow-x:auto}
+.tb{border-collapse:collapse;width:100%;font-size:.86rem}
+.tb th,.tb td{border:1px solid var(--line);padding:4px 7px;text-align:center;white-space:nowrap}
+.tb th{background:var(--soft);font-weight:600}
+.tb td.out{font-family:var(--mono);background:#fff;font-weight:600}
+.tb td.sheet{font-family:var(--mono);color:var(--steel);background:#f4f6f9}
+.tb tr.sel td{background:#fff3dd}
+.tb tr.sel td.out{background:#ffe9bd}
+.in{width:84px;text-align:right;font-family:var(--mono);font-size:.86rem;padding:3px 5px;border:1px solid #d9c98a;border-radius:4px;background:#fffbe3;color:var(--ink)}
+.in.w{width:100px}
+.legend{font-size:.8rem;color:var(--steel);margin:6px 0}
+.legend i{display:inline-block;width:12px;height:12px;border:1px solid #d9c98a;background:#fffbe3;vertical-align:-1px;margin-right:4px;border-radius:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:16px;padding:4px 12px;font-size:.84rem;color:var(--ink)}
+.tabs button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip{display:inline-block;border-radius:10px;padding:0 8px;font-size:.78rem;font-weight:700;color:#fff;background:var(--steel)}
+.chip.ok{background:var(--ok)}.chip.warn{background:var(--warn);color:#1d1500}.chip.bad{background:var(--bad)}
+.chart{width:100%;height:auto;max-height:430px;background:#fff;border:1px solid var(--line);border-radius:6px}
+.chart .gl{stroke:#e3e9f1;stroke-width:1}
+.chart .fr{fill:none;stroke:#9fb0c4;stroke-width:1}
+.chart .tk{font:11px var(--mono);fill:var(--steel)}
+.chart .ax{font:12px var(--sans);fill:var(--ink)}
+.chart .lb{font:11px var(--mono)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.92rem}
+.kv b{font-family:var(--mono);font-weight:600}
+.slider{display:flex;align-items:center;gap:12px;margin:8px 0}
+.slider input[type=range]{flex:1;accent-color:var(--orange)}
+.slider output{font-family:var(--mono);font-weight:700;min-width:70px}
+.q{margin:10px 0;padding:10px 14px;border:1px solid var(--line);border-radius:8px}
+.q label{display:block;padding:3px 0;cursor:pointer}
+.q .fb{font-size:.9rem;margin-top:4px;font-weight:600}
+.pill{display:inline-block;padding:1px 9px;border-radius:10px;background:var(--soft);color:var(--blue-d);font-size:.8rem;font-weight:600}
+.hot{cursor:pointer}
+.hot:hover{filter:brightness(.96)}
+.cls td,.cls th{padding:4px 10px}
+.cls tr.hit td{background:#ffe9bd;font-weight:700}
+
+/* panel */
+.drawer{position:fixed;right:0;top:50px;bottom:56px;width:340px;max-width:92vw;background:#fff;border-left:1px solid var(--line);box-shadow:-4px 0 14px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .2s;overflow:auto;padding:14px 16px;z-index:5}
+.drawer.open{transform:none}
+.drawer h3{margin-top:10px;font-size:1rem}
+.drawer .warnl{color:#8a2a1f;font-size:.84rem;margin:4px 0;padding-left:16px}
+.drawer .mini{width:100%;border-collapse:collapse;font-size:.8rem}
+.drawer .mini td,.drawer .mini th{border-bottom:1px solid var(--line);padding:3px 4px;text-align:right;font-family:var(--mono)}
+.drawer .mini th{font-family:var(--sans);background:var(--soft)}
+@media(prefers-reduced-motion:reduce){.drawer,.bot .prog{transition:none}}
+
+/* impresión */
+@media print{
+  @page{size:A4 landscape;margin:11mm}
+  body{display:block;background:#fff;height:auto;font-size:13px}
+  html{height:auto}
+  .top,.bot,.drawer{display:none!important}
+  .stage{overflow:visible;padding:0}
+  .slide{display:block!important;max-width:none;border:0;box-shadow:none;padding:0 0 10px;page-break-after:always;break-after:page}
+  .frag{display:block!important}
+  .in{border:0;background:none;padding:0}
+  .chart{max-height:300px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">CBR paso a paso<small>Ejemplo G-01 · muestra P-20-1 · V1</small></div>
+  <select id="idx" aria-label="Ir a la diapositiva"></select>
+  <div class="sp"></div>
+  <button class="btn ghost" id="bPanel" type="button">Panel de datos<span class="badge" id="wBadge" style="display:none">0</span></button>
+  <button class="btn" id="bAll" type="button" title="Mostrar todos los pasos de esta diapositiva">Mostrar todo</button>
+  <button class="btn" id="bExp" type="button">Exportar .txt</button>
+  <button class="btn" id="bPrint" type="button">Imprimir / PDF</button>
+  <button class="btn ghost" id="bReset" type="button">Restablecer</button>
+</header>
+
+<main class="stage" id="stage">
+
+<!-- 1 PORTADA -->
+<section class="slide" data-title="Portada">
+  <h1>Ensayo CBR: cómo se calcula, paso a paso</h1>
+  <p class="lead">Relación de soporte California (AASHTO T 193 · ASTM D1883) usando una planilla real de laboratorio.</p>
+  <div class="frag">
+    <div class="card" style="margin-top:14px">
+      <div class="kv">
+        <span>Proyecto</span><b style="font-family:var(--sans)">Revisión, complementación y actualización del estudio TESA para el asfaltado de la carretera Caracollo – Colquiri</b>
+        <span>Muestra</span><b style="font-family:var(--sans)">P-20-1 (grupo G-01): grava limosa, GM (SUCS) · A-1-a (AASHTO) · no plástico</b>
+        <span>Ensayo</span><b style="font-family:var(--sans)">3 moldes (56, 25 y 12 golpes), saturación del 18 al 22/08/2015, Laboratorio El Alto</b>
+      </div>
+    </div>
+  </div>
+  <div class="frag">
+    <h3>Qué vas a calcular</h3>
+    <p>Desde los pesos y lecturas crudas de la planilla hasta el <b>CBR de diseño al 95 %, 97 % y 100 % de la densidad máxima</b> y la <b>expansión</b>. Cada paso muestra la fórmula, la sustitución y el resultado, y puedes cambiar los datos.</p>
+  </div>
+  <div class="frag">
+    <div class="cols">
+      <div class="card"><h3>Cómo usar esta presentación</h3>
+        <p><b>→</b>, <b>Espacio</b> o el botón <b>Siguiente</b> revelan el siguiente bloque y luego pasan de diapositiva. <b>←</b> retrocede.</p>
+        <p class="legend"><i></i>Las celdas amarillas son datos de laboratorio editables. Las celdas blancas se calculan solas.</p></div>
+      <div class="card"><h3>Panel de datos</h3>
+        <p>El botón <b>Panel de datos</b> (arriba) resume los resultados vigentes, avisa si algún dato es inválido y permite aplicar la corrección de origen de la curva.</p></div>
+    </div>
+  </div>
+  <p class="src">Ing. Rodolfo Angel Aliaga Choque · Mecánica de Suelos · UNIVALLE La Paz. Planilla original: PCA Ingenieros Consultores S.A. para la Administradora Boliviana de Carreteras (ABC), formulario S-06 C.B.R.</p>
+</section>
+
+<!-- 2 QUE MIDE -->
+<section class="slide" data-title="¿Qué mide el CBR?">
+  <h2>¿Qué mide el CBR?</h2>
+  <div class="frag">
+    <p>El CBR compara la <b>resistencia a la penetración</b> de un suelo compactado con la de una <b>piedra triturada patrón</b>. Si el suelo resiste lo mismo que la piedra patrón, su CBR es 100 %.</p>
+  </div>
+  <div class="frag">
+    <div class="fx">CBR (%) = <span style="font-size:1.3em">(</span> presión del suelo a la penetración dada ÷ presión de la piedra patrón a esa penetración <span style="font-size:1.3em">)</span> × 100</div>
+  </div>
+  <div class="frag">
+    <div class="cols">
+      <div class="tw"><table class="tb">
+        <thead><tr><th>Penetración</th><th>Presión patrón (100 %)</th></tr></thead>
+        <tbody><tr><td>0,1 in (2,54 mm)</td><td>1000 lb/in² (≈ 6,9 MPa)</td></tr>
+        <tr><td>0,2 in (5,08 mm)</td><td>1500 lb/in² (≈ 10,3 MPa)</td></tr></tbody></table>
+        <p class="legend">Estos son los valores de la columna «Carga normal» de la planilla.</p></div>
+      <div class="card"><h3>Para qué sirve</h3>
+        <p>Es un índice de <b>capacidad de soporte</b> de subrasantes, subbases y bases en el diseño de pavimentos. La <b>expansión</b> que se mide durante la saturación indica cuánto cambia de volumen el suelo al mojarse.</p></div>
+    </div>
+  </div>
+  <div class="frag"><div class="card note"><b>Idea clave:</b> el CBR no es una propiedad única del suelo. Depende de la densidad y de la humedad con que se compacta y saturó el ensayo. Por eso se ensayan tres moldes con distinta energía.</div></div>
+  <p class="src">Fuente: AASHTO T 193 / ASTM D1883 (normas; no están en los archivos del proyecto). Los valores 1000 y 1500 lb/in² coinciden con la planilla del ejemplo.</p>
+</section>
+
+<!-- 3 ENSAYO -->
+<section class="slide" data-title="El ensayo en cuatro etapas">
+  <h2>El ensayo en cuatro etapas</h2>
+  <div class="frag">
+  <svg viewBox="0 0 660 290" class="chart" role="img" aria-label="Esquema de saturación y penetración del ensayo CBR" style="max-height:300px">
+    <defs>
+      <pattern id="hSoil" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e9dcc2"/><circle cx="2" cy="2" r="1" fill="#a88e5d"/><circle cx="6" cy="6" r="1.2" fill="#8c7447"/></pattern>
+      <marker id="aR" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker>
+    </defs>
+    <text x="165" y="22" text-anchor="middle" class="ax" font-weight="700">Saturación (4 días)</text>
+    <text x="500" y="22" text-anchor="middle" class="ax" font-weight="700">Penetración</text>
+    <rect x="20" y="150" width="290" height="120" fill="#cfe4f6" stroke="#5a8bb8"/>
+    <text x="34" y="262" class="lb" fill="#2a5a85">agua</text>
+    <rect x="95" y="165" width="140" height="95" fill="url(#hSoil)" stroke="#3b3b3b" stroke-width="2"/>
+    <rect x="105" y="150" width="120" height="15" fill="#8b98a8" stroke="#3b3b3b"/>
+    <line x1="75" y1="100" x2="255" y2="100" stroke="#3b3b3b" stroke-width="3"/>
+    <line x1="85" y1="100" x2="85" y2="150" stroke="#3b3b3b" stroke-width="2"/><line x1="245" y1="100" x2="245" y2="150" stroke="#3b3b3b" stroke-width="2"/>
+    <circle cx="165" cy="78" r="20" fill="#fff" stroke="#3b3b3b" stroke-width="2"/><line x1="165" y1="78" x2="174" y2="68" stroke="#c0392b" stroke-width="2"/>
+    <line x1="165" y1="98" x2="165" y2="150" stroke="#3b3b3b" stroke-width="2"/>
+    <text x="195" y="60" class="lb" fill="#17283b">extensómetro → expansión</text>
+    <text x="240" y="159" class="lb" fill="#17283b">sobrecarga</text>
+    <text x="165" y="218" text-anchor="middle" class="lb" fill="#17283b">suelo compactado</text>
+    <rect x="390" y="165" width="140" height="95" fill="url(#hSoil)" stroke="#3b3b3b" stroke-width="2"/>
+    <rect x="445" y="90" width="30" height="75" fill="#8b98a8" stroke="#3b3b3b" stroke-width="2"/>
+    <ellipse cx="460" cy="62" rx="40" ry="26" fill="#fff" stroke="#3b3b3b" stroke-width="3"/>
+    <circle cx="460" cy="62" r="9" fill="#fff" stroke="#3b3b3b" stroke-width="2"/>
+    <line x1="460" y1="30" x2="460" y2="12" stroke="#c0392b" stroke-width="3" marker-end="url(#aR)" transform="rotate(180 460 21)"/>
+    <text x="508" y="66" class="lb" fill="#17283b">anillo + dial</text>
+    <text x="482" y="130" class="lb" fill="#17283b">pistón 3 in²</text>
+    <text x="460" y="283" text-anchor="middle" class="lb" fill="#17283b">1,27 mm/min</text>
+    <text x="330" y="284" text-anchor="middle" class="lb" fill="#5a6e85">esquema referencial</text>
+  </svg>
+  </div>
+  <div class="cols" style="margin-top:12px">
+    <div class="frag"><div class="card"><h3>1. Moldeo</h3><p>Se compactan tres moldes con la misma humedad (cerca de la óptima) y <b>56, 25 y 12 golpes por capa</b>, en 5 capas. Así se obtienen tres densidades distintas.</p></div></div>
+    <div class="frag"><div class="card"><h3>2. Saturación</h3><p>Los moldes se sumergen <b>4 días</b> con sobrecarga. Un extensómetro mide cuánto se hincha la muestra: es la <b>expansión</b>.</p></div></div>
+    <div class="frag"><div class="card"><h3>3. Penetración</h3><p>Un pistón de 3 in² penetra a 1,27 mm/min. Se lee el anillo dinamométrico cada 0,025 in hasta 0,5 in y se convierte a carga.</p></div></div>
+    <div class="frag"><div class="card"><h3>4. Cálculo</h3><p>Con la carga a 0,1 in y 0,2 in se obtiene el CBR de cada molde. Luego se interpola al <b>95, 97 y 100 %</b> de la densidad máxima.</p></div></div>
+  </div>
+  <p class="src">Las etapas siguen AASHTO T 193 / ASTM D1883. La planilla no indica la sobrecarga empleada; el esquema es referencial.</p>
+</section>
+
+<!-- 4 MAPA PLANILLA -->
+<section class="slide" data-title="Cómo leer la planilla">
+  <h2>Cómo leer la planilla</h2>
+  <p>La planilla S-06 tiene cinco bloques. <b>Toca cada uno</b> para ver qué contiene y en qué paso se calcula.</p>
+  <div class="cols w21">
+    <div class="frag">
+      <svg viewBox="0 0 520 330" class="chart" id="svgMap" role="img" aria-label="Mapa de la planilla CBR" style="max-height:340px">
+        <g class="hot" data-blk="A"><rect x="10" y="8" width="500" height="44" rx="4" fill="#dfeaf7" stroke="#1b5fa6"/><text x="22" y="28" class="ax" font-weight="700">A · Identificación y clasificación</text><text x="22" y="44" class="lb" fill="#5a6e85">proyecto, grupo, muestra, SUCS/AASHTO, w óptima, γd máx</text></g>
+        <g class="hot" data-blk="B"><rect x="10" y="60" width="500" height="78" rx="4" fill="#fbe9d5" stroke="#d9700f"/><text x="22" y="80" class="ax" font-weight="700">B · Contenido de humedad y peso unitario</text><text x="22" y="96" class="lb" fill="#5a6e85">moldes 4, 5, 6 · antes de mojarse / después de mojado</text>
+          <rect x="22" y="104" width="150" height="26" fill="#fff" stroke="#e5b98a"/><rect x="185" y="104" width="150" height="26" fill="#fff" stroke="#e5b98a"/><rect x="348" y="104" width="150" height="26" fill="#fff" stroke="#e5b98a"/>
+          <text x="97" y="121" text-anchor="middle" class="lb">molde 4 · 56 g</text><text x="260" y="121" text-anchor="middle" class="lb">molde 5 · 25 g</text><text x="423" y="121" text-anchor="middle" class="lb">molde 6 · 12 g</text></g>
+        <g class="hot" data-blk="C"><rect x="10" y="146" width="500" height="58" rx="4" fill="#e6f3ea" stroke="#2e8b57"/><text x="22" y="166" class="ax" font-weight="700">C · Expansión</text><text x="22" y="182" class="lb" fill="#5a6e85">fecha, hora, días, lectura del extensómetro, cm y %</text><text x="22" y="197" class="lb" fill="#5a6e85">5 lecturas (día 0 al 4)</text></g>
+        <g class="hot" data-blk="D"><rect x="10" y="212" width="500" height="58" rx="4" fill="#efe7f6" stroke="#7a4fa0"/><text x="22" y="232" class="ax" font-weight="700">D · C.B.R. (penetración)</text><text x="22" y="248" class="lb" fill="#5a6e85">pulgadas, cm, lectura del anillo, carga (lb), carga corregida, CBR %</text><text x="22" y="263" class="lb" fill="#5a6e85">filas en 0,1 in y 0,2 in en negrita</text></g>
+        <g class="hot" data-blk="E"><rect x="10" y="278" width="500" height="46" rx="4" fill="#eef1f4" stroke="#5a6e85"/><text x="22" y="298" class="ax" font-weight="700">E · Gráficas (segunda hoja)</text><text x="22" y="314" class="lb" fill="#5a6e85">carga–penetración · CBR–γd · expansión–γd (al 95, 97, 100 %)</text></g>
+      </svg>
+    </div>
+    <div class="frag"><div class="card" id="mapInfo"><h3>Toca un bloque</h3><p>Aquí aparece la explicación.</p></div></div>
+  </div>
+</section>
+
+<!-- 5 DATOS -->
+<section class="slide" data-title="Datos del ejemplo y puntos a confirmar">
+  <h2>Datos del ejemplo y puntos a confirmar</h2>
+  <div class="cols">
+    <div class="frag"><div class="card"><h3>Identificación (bloque A)</h3>
+      <div class="kv"><span>Muestra</span><b>P-20-1 · grupo G-01</b><span>Clasificación</span><b>GM · A-1-a (IG = 0) · N.P.</b><span>Humedad óptima</span><span><input class="in" type="number" step="any" data-p="wopt"> %</span><span>γ<sub>d,máx</sub></span><span><input class="in" type="number" step="any" data-p="gdmax"> g/cm³</span><span>Anillo de carga</span><b>«PR 100 lbs»</b></div>
+      <p class="legend"><i></i>Editables. La humedad óptima y γ<sub>d,máx</sub> vienen de un ensayo Proctor que no está en este PDF; 56 golpes × 5 capas corresponde al Proctor modificado (AASHTO T 180).</p></div></div>
+    <div class="frag"><div class="card"><h3>Datos que se usan en los pasos</h3>
+      <p>Por cada molde: masas del molde con suelo, tara y volumen; lecturas del extensómetro; lecturas del anillo a cada 0,025 in. Todos están en las celdas amarillas de los pasos 1 a 6.</p></div></div>
+  </div>
+  <h3>Antes de calcular: datos ambiguos o deducidos</h3>
+  <div class="frag"><div class="card note"><b>1. Calibración del anillo.</b> La planilla solo dice «PR 100 lbs» y no trae el certificado de calibración. Se usa la relación lectura → carga que se deduce de la propia planilla (paso 5).</div></div>
+  <div class="frag"><div class="card note"><b>2. Escala de expansión.</b> No se indica la división del extensómetro ni la altura h de la muestra. Con 1 división = 0,01 mm y h = 116 mm se reproducen todos los valores de expansión que revisé en las hojas del PDF. La norma usa h ≈ 116,43 mm.</div></div>
+  <div class="frag"><div class="card note"><b>3. Área del pistón.</b> Se toma 3 in² (norma). Con ese valor se reproducen los CBR de la planilla.</div></div>
+  <div class="frag"><div class="card note"><b>4. Encabezado.</b> Todas las hojas del PDF dicen «Muestra: P-20-1», pero solo en G-01 esa muestra aparece en la tabla de clasificación. Por eso este es el ejemplo elegido.</div></div>
+</section>
+
+<!-- 6 PASO 1 -->
+<section class="slide" data-title="Paso 1 · Peso unitario húmedo">
+  <h2>Paso 1 · Peso unitario húmedo</h2>
+  <div class="frag"><p>Se mide cuánto pesa el suelo compactado y se divide por el volumen del molde. Se hace <b>antes de mojar</b> y <b>después de la saturación</b>.</p></div>
+  <div class="frag"><div class="tw" id="t6"></div><p class="legend"><i></i>Datos de laboratorio. Las celdas blancas se calculan.</p></div>
+  <div class="frag">
+    <div class="tabs" id="tb6"></div>
+    <div class="cols">
+      <div><div class="cap">Fórmula</div>
+        <div class="fx">W<sub>h</sub> = W<sub>(m+molde)</sub> − W<sub>molde</sub><br>γ<sub>h</sub> = W<sub>h</sub> ÷ V</div></div>
+      <div><div class="cap">Sustitución y resultado</div>
+        <div class="sub" id="d6a"></div><div class="res" id="d6b"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="card note">γ<sub>h</sub> en g/cm³ equivale a t/m³. La densidad húmeda aumenta con los golpes porque el suelo queda más compacto.</div></div>
+  <p class="src">Fuente: Das, Fundamentos de Ingeniería Geotécnica, cap. 5, ec. (5.1): γ = W/V.</p>
+</section>
+
+<!-- 7 PASO 2 -->
+<section class="slide" data-title="Paso 2 · Contenido de humedad">
+  <h2>Paso 2 · Contenido de humedad</h2>
+  <div class="frag"><p>Se toma una muestra, se pesa húmeda y se seca en horno. La diferencia es el agua. Antes de mojar se toma del fondo; después de la saturación, de los 2 in superiores del molde.</p></div>
+  <div class="frag"><div class="tw" id="t7"></div></div>
+  <div class="frag">
+    <div class="tabs" id="tb7"></div>
+    <div class="cols">
+      <div><div class="cap">Fórmula</div>
+        <div class="fx">W<sub>w</sub> = W<sub>(h+t)</sub> − W<sub>(s+t)</sub><br>W<sub>s</sub> = W<sub>(s+t)</sub> − W<sub>t</sub><br>w (%) = W<sub>w</sub> ÷ W<sub>s</sub> × 100</div></div>
+      <div><div class="cap">Sustitución y resultado</div>
+        <div class="sub" id="d7a"></div><div class="res" id="d7b"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="card note">La humedad se calcula sobre el <b>peso seco</b>, no sobre el húmedo. Después de saturar, w sube porque el suelo absorbe agua.</div></div>
+</section>
+
+<!-- 8 PASO 3 -->
+<section class="slide" data-title="Paso 3 · Peso unitario seco y compactación">
+  <h2>Paso 3 · Peso unitario seco y grado de compactación</h2>
+  <div class="frag"><p>El peso unitario seco quita el efecto del agua. Comparado con γ<sub>d,máx</sub> del Proctor da el <b>porcentaje de compactación</b> de cada molde.</p></div>
+  <div class="frag">
+    <div class="cols">
+      <div><div class="cap">Fórmulas</div>
+        <div class="fx">γ<sub>d</sub> = γ<sub>h</sub> ÷ (1 + w/100)<br>Compactación (%) = γ<sub>d</sub> ÷ γ<sub>d,máx</sub> × 100</div>
+        <div class="tabs" id="tb8"></div>
+        <div class="sub" id="d8a"></div><div class="res" id="d8b"></div>
+        <p class="legend" id="d8n"></p></div>
+      <div><div id="c8"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="tw" id="t8"></div></div>
+  <div class="frag"><div class="card note">Menos golpes dan menor densidad: el molde de 56 golpes llega a ~100 % y el de 12 golpes a ~91 %. Ese rango permite interpolar el CBR a 95, 97 y 100 %.</div></div>
+  <p class="src">Fuente: Das, Fundamentos de Ingeniería Geotécnica, cap. 5, ec. (5.2): γ<sub>d</sub> = γ/(1 + w/100).</p>
+</section>
+
+<!-- 9 PASO 4 -->
+<section class="slide" data-title="Paso 4 · Expansión">
+  <h2>Paso 4 · Expansión</h2>
+  <div class="frag"><p>Durante 4 días el extensómetro registra cuánto sube la superficie de la muestra. La expansión es ese desplazamiento dividido por la altura de la muestra.</p></div>
+  <div class="frag">
+    <div class="cols">
+      <div><div class="cap">Fórmula</div>
+        <div class="fx">ΔL = (L<sub>i</sub> − L<sub>0</sub>) × división<br>Expansión (%) = ΔL ÷ h × 100</div>
+        <div class="kv" style="margin:8px 0"><span>División del extensómetro</span><span><input class="in" type="number" step="any" data-p="divMm"> mm</span><span>Altura h de la muestra</span><span><input class="in" type="number" step="any" data-p="h"> mm</span></div>
+        <p class="legend">Valores deducidos de la planilla (ver diapositiva 5).</p>
+        <div class="tabs" id="tb9"></div>
+        <div class="sub" id="d9a"></div><div class="res" id="d9b"></div></div>
+      <div><div id="c9"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="tw" id="t9"></div></div>
+  <div class="frag"><div class="card note">La expansión se informa con el valor del <b>día 4</b>. Un suelo granular como este casi no se expande (≈ 0,01 %). Los suelos arcillosos del mismo PDF (por ejemplo G-10) superan el 2 %.</div></div>
+</section>
+
+<!-- 10 PASO 5 -->
+<section class="slide" data-title="Paso 5 · Carga desde el anillo">
+  <h2>Paso 5 · Del dial del anillo a la carga</h2>
+  <div class="frag"><p>El anillo dinamométrico se deforma con la carga y un dial mide esa deformación. La <b>curva de calibración</b> del anillo convierte la lectura del dial en libras.</p></div>
+  <div class="frag">
+    <div class="cols">
+      <div><div class="cap">Relación lectura → carga</div>
+        <div class="fx">P (lb) = a · L + b &nbsp;&nbsp; (L = 0 → P = 0)</div>
+        <div class="kv" style="margin:8px 0"><span>a (lb por división)</span><span><input class="in w" type="number" step="any" data-p="ringA"></span><span>b (lb)</span><span><input class="in w" type="number" step="any" data-p="ringB"></span></div>
+        <div class="card note"><b>Dato deducido.</b> Los 24 pares lectura–carga de la planilla caen sobre una recta con a ≈ 9,4374 lb/div y b ≈ −86,5 lb (error máximo ≈ 0,1 lb). El certificado real del anillo no está en el PDF; si lo tienes, escribe aquí sus coeficientes.</div>
+        <h3>Prueba rápida</h3>
+        <div class="kv"><span>Lectura del dial L</span><span><input class="in" type="number" step="1" data-p="free.dial"></span><span>Carga P</span><b id="cvP"></b></div></div>
+      <div><div id="c10"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="tw" id="t10"></div><p class="legend"><i></i>Las lecturas L son datos del laboratorio. «Planilla» es la carga impresa en el formulario y sirve para comparar.</p></div>
+</section>
+
+<!-- 11 PASO 6 -->
+<section class="slide" data-title="Paso 6 · Curva carga–penetración">
+  <h2>Paso 6 · Curva carga–penetración</h2>
+  <div class="frag"><p>Se grafica la carga contra la penetración para cada molde. Los puntos de interés son <b>0,1 in</b> y <b>0,2 in</b>.</p></div>
+  <div class="frag">
+    <div class="cols w21">
+      <div id="c11"></div>
+      <div>
+        <div class="slider"><label for="sl11">Penetración</label><input type="range" id="sl11" min="0" max="0.5" step="0.005" value="0.1"><output id="ol11"></output></div>
+        <div class="tw"><table class="tb" id="t11"></table></div>
+        <p class="legend">Mueve el control para leer la carga de cada molde (interpolación lineal entre lecturas).</p>
+      </div>
+    </div>
+  </div>
+  <div class="frag"><div class="card note">Más densidad → más carga a la misma penetración. La curva del molde de 56 golpes queda arriba y la del de 12 golpes abajo. Observa que al inicio las curvas tienen <b>pendiente creciente</b>: lo retomamos en el paso 8.</div></div>
+</section>
+
+<!-- 12 PASO 7 -->
+<section class="slide" data-title="Paso 7 · CBR de cada molde">
+  <h2>Paso 7 · CBR de cada molde</h2>
+  <div class="frag"><p>Se divide la carga entre el área del pistón para obtener presión, y se compara con la presión patrón.</p></div>
+  <div class="frag">
+    <div class="cols">
+      <div><div class="cap">Fórmula</div>
+        <div class="fx">CBR<sub>0,1″</sub> = (P<sub>0,1″</sub> ÷ A) ÷ 1000 × 100<br>CBR<sub>0,2″</sub> = (P<sub>0,2″</sub> ÷ A) ÷ 1500 × 100</div>
+        <div class="kv" style="margin:8px 0"><span>Área A del pistón</span><span><input class="in" type="number" step="any" data-p="area"> in²</span><span>Presión patrón 0,1″</span><span><input class="in" type="number" step="any" data-p="std01"> lb/in²</span><span>Presión patrón 0,2″</span><span><input class="in" type="number" step="any" data-p="std02"> lb/in²</span></div></div>
+      <div><div class="tabs" id="tb12"></div>
+        <div class="sub" id="d12a"></div><div class="res" id="d12b"></div></div>
+    </div>
+  </div>
+  <div class="frag"><div class="tw" id="t12"></div></div>
+  <div class="frag"><div class="card alert" id="n12"></div></div>
+  <p class="src">Criterio de adopción: ASTM D1883 / AASHTO T 193. Si el CBR a 0,2″ resulta mayor que a 0,1″, se repite el ensayo y, si se confirma, se adopta el de 0,2″.</p>
+</section>
+
+<!-- 13 PASO 8 -->
+<section class="slide" data-title="Paso 8 · Corrección de origen (opcional)">
+  <h2>Paso 8 · Corrección de la curva (opcional)</h2>
+  <div class="frag"><p>A veces la curva empieza con una <b>concavidad hacia arriba</b>: la superficie de la muestra no estaba bien asentada contra el pistón. La norma pide correr el origen. Se traza la tangente en el tramo más empinado; donde corta el eje horizontal está el nuevo cero <b>c</b>.</p></div>
+  <div class="frag">
+    <div class="cols">
+      <div id="c13"></div>
+      <div>
+        <div class="tabs" id="tb13"></div>
+        <div class="fx">P<sub>corr</sub>(0,1″) = P(0,1 + c) &nbsp;·&nbsp; P<sub>corr</sub>(0,2″) = P(0,2 + c)</div>
+        <label style="display:block;margin:8px 0"><input type="checkbox" id="ck13"> <b>Aplicar la corrección en todos los cálculos</b></label>
+        <div class="card note">La planilla trae la columna «lb (corr)», pero sus valores son <b>iguales</b> a los de la columna «lb»: <b>no se aplicó corrección</b>. Con la corrección activada, los resultados dejan de coincidir con la planilla.</div>
+      </div>
+    </div>
+  </div>
+  <div class="frag"><div class="tw" id="t13"></div></div>
+  <div class="frag"><div class="card alert">Con 8 puntos la tangente se estima con el tramo más empinado entre lecturas consecutivas. Es una aproximación: la norma la traza sobre la curva suavizada. Para decidir si corresponde corregir, revisa la gráfica real del ensayo.</div></div>
+</section>
+
+<!-- 14 PASO 9 -->
+<section class="slide" data-title="Paso 9 · CBR y expansión de diseño">
+  <h2>Paso 9 · CBR y expansión al 95, 97 y 100 % de γ<sub>d,máx</sub></h2>
+  <div class="frag"><p>Cada molde da un par (γ<sub>d</sub>, CBR). Para diseñar se necesita el CBR a una densidad objetivo: se <b>interpola</b> entre los moldes.</p></div>
+  <div class="frag">
+    <div class="fx">γ<sub>d,objetivo</sub> = (%/100) · γ<sub>d,máx</sub> &nbsp;&nbsp;→&nbsp;&nbsp; CBR = CBR<sub>1</sub> + (γ<sub>d,obj</sub> − γ<sub>d1</sub>) · (CBR<sub>2</sub> − CBR<sub>1</sub>) ÷ (γ<sub>d2</sub> − γ<sub>d1</sub>)</div>
+  </div>
+  <div class="frag">
+    <div class="slider"><label for="sl14">Compactación objetivo</label><input type="range" id="sl14" min="90" max="100" step="0.5" value="95"><output id="ol14"></output></div>
+    <div class="cols"><div id="c14a"></div><div id="c14b"></div></div>
+    <div class="card good" id="r14" style="margin-top:8px"></div>
+  </div>
+  <div class="frag"><div class="tw" id="t14"></div></div>
+  <div class="frag"><div class="card note">La planilla lee estos valores en la gráfica (45,3 · 38,9 · 33,4). Aquí se interpola linealmente entre moldes, por eso aparecen diferencias de hasta ~0,4 puntos de CBR. Es normal que dos lecturas de la misma curva no coincidan al decimal.</div></div>
+</section>
+
+<!-- 15 INTERPRETACION -->
+<section class="slide" data-title="Interpretación de resultados">
+  <h2>Interpretación de resultados</h2>
+  <div class="frag"><div class="card good" id="i15"></div></div>
+  <div class="frag">
+    <div class="cols">
+      <div><h3>Capacidad de soporte (referencial)</h3>
+        <table class="tb cls" id="cls15"><thead><tr><th>CBR (%)</th><th>Calidad cualitativa</th></tr></thead>
+        <tbody>
+          <tr data-lo="0" data-hi="3"><td>0 – 3</td><td>Muy mala</td></tr>
+          <tr data-lo="3" data-hi="7"><td>3 – 7</td><td>Pobre a regular</td></tr>
+          <tr data-lo="7" data-hi="20"><td>7 – 20</td><td>Regular</td></tr>
+          <tr data-lo="20" data-hi="50"><td>20 – 50</td><td>Buena</td></tr>
+          <tr data-lo="50" data-hi="1e9"><td>&gt; 50</td><td>Excelente</td></tr>
+        </tbody></table></div>
+      <div><h3>Expansión (orden de magnitud)</h3>
+        <table class="tb cls" id="cls15e"><thead><tr><th>Expansión (%)</th><th>Lectura</th></tr></thead>
+        <tbody>
+          <tr data-lo="0" data-hi="1"><td>&lt; 1</td><td>Baja</td></tr>
+          <tr data-lo="1" data-hi="3"><td>1 – 3</td><td>Moderada</td></tr>
+          <tr data-lo="3" data-hi="1e9"><td>&gt; 3</td><td>Alta</td></tr>
+        </tbody></table></div>
+    </div>
+  </div>
+  <div class="frag"><div class="card note"><b>Qué valor se adopta</b> depende de la especificación del proyecto. Es frecuente usar el CBR a 95 % de γ<sub>d,máx</sub>, pero confirma el criterio vigente (por ejemplo, el de la ABC) antes de diseñar. Las tablas son guías cualitativas de textos de pavimentos, no límites normativos.</div></div>
+</section>
+
+<!-- 16 VERIFICACION -->
+<section class="slide" data-title="Verificación contra la planilla">
+  <h2>Verificación contra la planilla</h2>
+  <div class="frag"><div id="v16note" class="card good"></div></div>
+  <div class="frag"><div class="tw" id="t16"></div>
+    <p class="legend"><span class="chip ok">✓</span> coincide al decimal de la planilla · <span class="chip warn">≈</span> difiere en 1 unidad del último decimal (redondeo) o hasta 0,5 en lectura gráfica · <span class="chip bad">✗</span> no coincide.</p></div>
+  <h3>Observaciones críticas del ejemplo</h3>
+  <div class="frag"><div class="card note"><b>CBR a 0,2″ mayor que a 0,1″</b> en los moldes 4 (51,6 vs 45,9) y 5 (36,5 vs 35,5). La planilla adopta 0,1″. Según la norma correspondería verificar con un ensayo repetido.</div></div>
+  <div class="frag"><div class="card note"><b>Sin corrección de origen</b> (columna «lb corr» = «lb»), aunque las curvas muestran pendiente creciente al inicio. Con la corrección del paso 8 el CBR del molde 4 sube a ≈ 51,8 %.</div></div>
+  <div class="frag"><div class="card note"><b>Valores de diseño leídos del gráfico:</b> la interpolación lineal da 45,7 · 38,7 · 33,3 frente a 45,3 · 38,9 · 33,4 de la planilla.</div></div>
+  <p class="src">Referencias: AASHTO T 193 / ASTM D1883 (CBR); Das, Fundamentos de Ingeniería Geotécnica, cap. 5 (γ, γ<sub>d</sub>, Proctor modificado). Las normas no están en los archivos del proyecto y se citan de memoria: verifica los numerales en la edición vigente.</p>
+</section>
+
+<!-- 17 PRACTICA -->
+<section class="slide" data-title="Practica tú mismo">
+  <h2>Practica tú mismo</h2>
+  <div class="cols">
+    <div class="frag"><div class="card"><h3>Calculadora libre</h3>
+      <div class="kv"><span>Carga a 0,1″</span><span><input class="in" type="number" step="any" data-p="free.p01"> lb</span><span>Carga a 0,2″</span><span><input class="in" type="number" step="any" data-p="free.p02"> lb</span></div>
+      <div class="res" id="f17"></div></div></div>
+    <div class="frag"><div class="card"><h3>Reto con otra hoja del PDF</h3>
+      <p>Usa la hoja <b>G-10</b> (suelo CL, A-4 (6), molde 19). Con la lectura de dial para 0,1″ y la carga correspondiente, calcula el CBR y compáralo con el de este ejemplo.</p>
+      <p class="legend">Dato de la hoja: carga a 0,1″ = 90,3 lb, a 0,2″ = 110,1 lb.</p>
+      <button class="btn" style="background:var(--soft)" type="button" id="bRet">Ver respuesta</button><div id="aRet" class="fb" style="display:none;margin-top:6px">CBR<sub>0,1″</sub> = 90,3 ÷ 3 ÷ 1000 × 100 = <b>3,0 %</b> · CBR<sub>0,2″</sub> = 110,1 ÷ 3 ÷ 1500 × 100 = <b>2,4 %</b>. Un suelo arcilloso con CBR bajo y expansión alta (hasta 2–4 % en esa hoja).</div></div></div>
+  </div>
+  <div class="frag">
+    <h3>Autoevaluación</h3>
+    <div class="q" data-ans="b"><b>1.</b> Con 900 lb a 0,1″ y un pistón de 3 in², ¿cuál es el CBR?
+      <label><input type="radio" name="q1" value="a"> 3,0 %</label><label><input type="radio" name="q1" value="b"> 30 %</label><label><input type="radio" name="q1" value="c"> 90 %</label><div class="fb"></div></div>
+    <div class="q" data-ans="c"><b>2.</b> ¿Qué energía de compactación indica 56 golpes por capa, 5 capas, molde de 6″?
+      <label><input type="radio" name="q2" value="a"> Proctor estándar</label><label><input type="radio" name="q2" value="b"> Compactación estática</label><label><input type="radio" name="q2" value="c"> Proctor modificado</label><div class="fb"></div></div>
+    <div class="q" data-ans="a"><b>3.</b> Si el CBR a 0,2″ es mayor que a 0,1″, ¿qué indica la norma?
+      <label><input type="radio" name="q3" value="a"> Repetir el ensayo; si se confirma, adoptar el de 0,2″</label><label><input type="radio" name="q3" value="b"> Promediar ambos</label><label><input type="radio" name="q3" value="c"> Usar siempre el de 0,1″</label><div class="fb"></div></div>
+  </div>
+</section>
+
+</main>
+
+<aside class="drawer" id="drawer" aria-label="Panel de datos">
+  <h3 style="margin-top:0">Resultados vigentes</h3>
+  <div id="pn"></div>
+  <h3>Opciones</h3>
+  <label><input type="checkbox" id="ckP"> Aplicar corrección de origen (paso 8)</label>
+  <h3>Avisos</h3>
+  <div id="pw"></div>
+</aside>
+
+<footer class="bot">
+  <div class="prog" id="prog"></div>
+  <button class="nav sec" id="bPrev" type="button">← Anterior</button>
+  <div class="cnt" id="cnt"></div>
+  <button class="nav" id="bNext" type="button">Siguiente →</button>
+</footer>
+
+<script>
+'use strict';
+/* ===================== DATOS ===================== */
+const DEF={
+  gdmax:2.179,wopt:6.3,h:116,divMm:0.01,area:3,std01:1000,std02:1500,ringA:9.4374,ringB:-86.5,
+  pens:[0.025,0.05,0.075,0.1,0.2,0.3,0.4,0.5],
+  free:{p01:900,p02:1200,dial:155},
+  molds:[
+    {id:4,blows:56,vol:[2085,2085],molde:[6575,6575],mhm:[11400,11470],tara:[{n:'38',ht:469,st:448,t:104},{n:'52',ht:451,st:427,t:102}],expRead:[0,1,1,1,1],dial:[35,65,110,155,255,355,480,562]},
+    {id:5,blows:25,vol:[2080,2080],molde:[6590,6590],mhm:[11185,11265],tara:[{n:'34',ht:462,st:442,t:110},{n:'48',ht:433,st:409,t:98}],expRead:[0,1,1,1,1],dial:[22,50,90,122,183,233,316,360]},
+    {id:6,blows:12,vol:[2070,2070],molde:[6620,6620],mhm:[10980,11205],tara:[{n:'32',ht:450,st:430,t:110},{n:'44',ht:445,st:419,t:99}],expRead:[0,2,2,2,2],dial:[15,33,53,70,90,105,135,160]}
+  ]
+};
+/* Valores impresos en la planilla G-01 (para comparar) */
+const SHEET={
+  gh:[[2.314,2.348],[2.209,2.247],[2.106,2.215]],
+  w:[[6.10,7.38],[6.02,7.72],[6.25,8.13]],
+  gd:[[2.181,2.186],[2.084,2.086],[1.982,2.048]],
+  comp:[100.09,95.62,90.98],
+  exp:[0.01,0.01,0.02],
+  cbr01:[45.9,35.5,19.1],cbr02:[51.6,36.5,17.0],
+  load:[[243.8,526.9,951.6,1376.3,2320.0,3263.8,4443.4,5217.3],[121.1,385.4,762.9,1064.9,1640.5,2112.4,2895.7,3311.0],[55.1,224.9,413.7,574.1,762.9,904.4,1187.5,1423.5]],
+  dcbr:{100:45.3,97:38.9,95:33.4},dexp:{100:0.01,97:0.01,95:0.01}
+};
+const DATES=['18/08/2015','19/08/2015','20/08/2015','21/08/2015','22/08/2015'];
+const COND=['Antes de mojarse','Después de mojado'];
+const MC=['#1b5fa6','#d9700f','#2e8b57'];
+const clone=o=>JSON.parse(JSON.stringify(o));
+let S=clone(DEF);
+const OPT={corr:false};
+const SEL={s6:{m:0,c:0},s7:{m:0,c:0},s8:{m:0},s9:{m:0},s12:{m:0},s13:{m:0}};
+
+/* ===================== UTILIDADES ===================== */
+const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toFixed(d).replace('.',','):'—';
+const nn=x=>Number.isFinite(x)?String(+x.toFixed(4)).replace('.',','):'—';
+const ft=v=>String(+(+v).toFixed(4)).replace('.',',');
+function getP(path){return path.split('.').reduce((o,k)=>o==null?o:o[k],S)}
+function setP(path,v){const ks=path.split('.');let o=S;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v}
+function inp(path,step,cls){return `<input class="in ${cls||''}" type="number" step="${step||'any'}" data-p="${path}" value="${getP(path)}">`}
+function interp(xs,ys,x){ // interpolación lineal, extremos fijos
+  if(x<=xs[0])return ys[0]; if(x>=xs[xs.length-1])return ys[ys.length-1];
+  for(let i=0;i<xs.length-1;i++) if(x>=xs[i]&&x<=xs[i+1]){const t=(x-xs[i])/(xs[i+1]-xs[i]);return ys[i]+t*(ys[i+1]-ys[i])}
+  return NaN;
+}
+function niceMax(v){const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+function ticks(a,b,n=5){const r=b-a;const raw=r/n;const p=Math.pow(10,Math.floor(Math.log10(raw)));const f=raw/p;const s=(f<1.5?1:f<3?2:f<7?5:10)*p;const out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)out.push(+v.toFixed(10));return out}
+function chart(o){
+  const m=Object.assign({l:62,r:18,t:14,b:46},o.m||{});
+  const iw=o.w-m.l-m.r, ih=o.h-m.t-m.b;
+  const X=v=>m.l+(v-o.x[0])/(o.x[1]-o.x[0])*iw, Y=v=>m.t+ih-(v-o.y[0])/(o.y[1]-o.y[0])*ih;
+  let s=`<svg viewBox="0 0 ${o.w} ${o.h}" class="chart" role="img" aria-label="${o.label||''}">`;
+  (o.xt||ticks(o.x[0],o.x[1],6)).forEach(v=>{s+=`<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t+ih}" class="gl"/><text x="${X(v)}" y="${m.t+ih+15}" class="tk" text-anchor="middle">${ft(v)}</text>`});
+  (o.yt||ticks(o.y[0],o.y[1],5)).forEach(v=>{s+=`<line x1="${m.l}" y1="${Y(v)}" x2="${m.l+iw}" y2="${Y(v)}" class="gl"/><text x="${m.l-6}" y="${Y(v)+4}" class="tk" text-anchor="end">${ft(v)}</text>`});
+  s+=`<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" class="fr"/>`;
+  s+=o.body(X,Y,{m,iw,ih});
+  s+=`<text x="${m.l+iw/2}" y="${o.h-6}" class="ax" text-anchor="middle">${o.xl||''}</text>`;
+  s+=`<text transform="translate(14 ${m.t+ih/2}) rotate(-90)" class="ax" text-anchor="middle">${o.yl||''}</text></svg>`;
+  return s;
+}
+const pathD=(pts,X,Y)=>pts.map((p,i)=>(i?'L':'M')+X(p.x).toFixed(1)+' '+Y(p.y).toFixed(1)).join(' ');
+
+/* ===================== CÁLCULO (fuente única) ===================== */
+function loadFromDial(L,p){return L<=0?0:Math.max(0,p.ringA*L+p.ringB)}
+function originCorrection(xs,ys){
+  let best=-1,slope=-Infinity;
+  for(let i=0;i<xs.length-1&&xs[i+1]<=0.2+1e-9;i++){const s=(ys[i+1]-ys[i])/(xs[i+1]-xs[i]);if(s>slope){slope=s;best=i}}
+  const x0=xs[best+1]-ys[best+1]/slope;
+  return {i:best,slope,x0,c:Math.max(0,x0),xa:xs[best],ya:ys[best],xb:xs[best+1],yb:ys[best+1]};
+}
+function interpPairs(pairs,key,g){
+  const xs=pairs.map(p=>p.g), ys=pairs.map(p=>p[key]);
+  return {v:interp(xs,ys,g),extrap:g<xs[0]-1e-9||g>xs[xs.length-1]+1e-9};
+}
+function calc(p,opt){
+  const R={molds:[],warn:[]};
+  p.molds.forEach(m=>{
+    const r={id:m.id,blows:m.blows};
+    r.cond=[0,1].map(c=>{
+      const t=m.tara[c], mh=m.mhm[c]-m.molde[c];
+      const gh=m.vol[c]>0?mh/m.vol[c]:NaN;
+      const ww=t.ht-t.st, ws=t.st-t.t;
+      const w=ws>0?ww/ws*100:NaN, gd=gh/(1+w/100);
+      const tag=`Molde ${m.id} (${COND[c].toLowerCase()})`;
+      if(!(mh>0))R.warn.push(`${tag}: la masa con molde debe ser mayor que la del molde.`);
+      if(!(m.vol[c]>0))R.warn.push(`${tag}: el volumen debe ser positivo.`);
+      if(!(ws>0))R.warn.push(`${tag}: W(s+t) debe ser mayor que la tara.`);
+      else if(ww<0)R.warn.push(`${tag}: W(h+t) no puede ser menor que W(s+t).`);
+      return {mh,gh,ww,ws,w,gd};
+    });
+    r.comp=r.cond[0].gd/p.gdmax*100;
+    r.expDL=m.expRead.map(x=>(x-m.expRead[0])*p.divMm);
+    r.exp=r.expDL.map(d=>d/p.h*100);
+    r.expFinal=r.exp[r.exp.length-1];
+    r.P=m.dial.map(L=>loadFromDial(L,p));
+    const xs=[0,...p.pens], ys=[0,...r.P];
+    r.xs=xs;r.ys=ys;
+    for(let k=1;k<ys.length;k++)if(ys[k]<ys[k-1]){R.warn.push(`Molde ${m.id}: la carga disminuye entre lecturas; revisa el dial.`);break}
+    r.corr=originCorrection(xs,ys);
+    r.c=opt.corr?r.corr.c:0;
+    r.P01=interp(xs,ys,0.1+r.c); r.P02=interp(xs,ys,0.2+r.c);
+    r.cbr01=r.P01/(p.area*p.std01)*100; r.cbr02=r.P02/(p.area*p.std02)*100;
+    r.cbr01raw=interp(xs,ys,0.1)/(p.area*p.std01)*100; r.cbr02raw=interp(xs,ys,0.2)/(p.area*p.std02)*100;
+    r.cbr01c=interp(xs,ys,0.1+r.corr.c)/(p.area*p.std01)*100; r.cbr02c=interp(xs,ys,0.2+r.corr.c)/(p.area*p.std02)*100;
+    r.flag02=r.cbr02>r.cbr01;
+    R.molds.push(r);
+  });
+  if(!(p.gdmax>0))R.warn.push('γd,máx debe ser positivo.');
+  if(!(p.h>0))R.warn.push('La altura h debe ser positiva.');
+  if(!(p.area>0)||!(p.std01>0)||!(p.std02>0))R.warn.push('Área y presiones patrón deben ser positivas.');
+  R.pairs=R.molds.map(r=>({g:r.cond[0].gd,cbr:r.cbr01,exp:r.expFinal,id:r.id})).sort((a,b)=>a.g-b.g);
+  R.design={};
+  [100,97,95].forEach(pc=>{
+    const g=p.gdmax*pc/100, a=interpPairs(R.pairs,'cbr',g), b=interpPairs(R.pairs,'exp',g);
+    R.design[pc]={g,cbr:a.v,exp:b.v,extrap:a.extrap};
+    if(a.extrap)R.warn.push(`Al ${pc} % de γd,máx el valor queda fuera del rango ensayado (se mantiene el extremo).`);
+  });
+  return R;
+}
+let R=calc(S,OPT);
+
+/* ===================== CONSTRUCCIÓN DE TABLAS ===================== */
+function build(){
+  // paso 1
+  let h='<table class="tb"><thead><tr><th>Molde</th><th>Condición</th><th>W<sub>(m+molde)</sub> [g]</th><th>W<sub>molde</sub> [g]</th><th>W<sub>h</sub> [g]</th><th>V [cm³]</th><th>γ<sub>h</sub> [g/cm³]</th></tr></thead><tbody>';
+  S.molds.forEach((m,i)=>[0,1].forEach(c=>{h+=`<tr data-r6="${i}_${c}"><td>${c==0?`<b>${m.id}</b> · ${m.blows} golpes`:''}</td><td>${COND[c]}</td><td>${inp(`molds.${i}.mhm.${c}`)}</td><td>${inp(`molds.${i}.molde.${c}`)}</td><td class="out" id="o6_${i}_${c}_mh"></td><td>${inp(`molds.${i}.vol.${c}`)}</td><td class="out" id="o6_${i}_${c}_gh"></td></tr>`}));
+  $('#t6').innerHTML=h+'</tbody></table>';
+  // paso 2
+  h='<table class="tb"><thead><tr><th>Molde</th><th>Condición</th><th>Tara N°</th><th>W<sub>(h+t)</sub> [g]</th><th>W<sub>(s+t)</sub> [g]</th><th>W<sub>t</sub> [g]</th><th>W<sub>w</sub> [g]</th><th>W<sub>s</sub> [g]</th><th>w [%]</th><th>w planilla</th></tr></thead><tbody>';
+  S.molds.forEach((m,i)=>[0,1].forEach(c=>{h+=`<tr data-r7="${i}_${c}"><td>${c==0?`<b>${m.id}</b>`:''}</td><td>${COND[c]}</td><td>${m.tara[c].n}</td><td>${inp(`molds.${i}.tara.${c}.ht`)}</td><td>${inp(`molds.${i}.tara.${c}.st`)}</td><td>${inp(`molds.${i}.tara.${c}.t`)}</td><td class="out" id="o7_${i}_${c}_ww"></td><td class="out" id="o7_${i}_${c}_ws"></td><td class="out" id="o7_${i}_${c}_w"></td><td class="sheet">${fmt(SHEET.w[i][c],2)}</td></tr>`}));
+  $('#t7').innerHTML=h+'</tbody></table>';
+  // paso 3
+  h='<table class="tb"><thead><tr><th>Molde</th><th>Golpes</th><th>γ<sub>h</sub> antes</th><th>w antes [%]</th><th>γ<sub>d</sub> antes</th><th>Compactación [%]</th><th>planilla</th><th>γ<sub>d</sub> después</th></tr></thead><tbody>';
+  S.molds.forEach((m,i)=>{h+=`<tr data-r8="${i}"><td><b>${m.id}</b></td><td>${m.blows}</td><td class="out" id="o8_${i}_gh"></td><td class="out" id="o8_${i}_w"></td><td class="out" id="o8_${i}_gd"></td><td class="out" id="o8_${i}_cp"></td><td class="sheet">${fmt(SHEET.comp[i],2)}</td><td class="out" id="o8_${i}_gd2"></td></tr>`});
+  $('#t8').innerHTML=h+'</tbody></table>';
+  // paso 4
+  h='<table class="tb"><thead><tr><th rowspan="2">Día</th><th rowspan="2">Fecha</th>'+S.molds.map(m=>`<th colspan="3">Molde ${m.id}</th>`).join('')+'</tr><tr>'+S.molds.map(()=>'<th>Lectura [div]</th><th>ΔL [mm]</th><th>Exp. [%]</th>').join('')+'</tr></thead><tbody>';
+  for(let d=0;d<5;d++){h+=`<tr data-r9="${d}"><td>${d}</td><td>${DATES[d]}</td>`+S.molds.map((m,i)=>`<td>${inp(`molds.${i}.expRead.${d}`,1)}</td><td class="out" id="o9_${i}_${d}_dl"></td><td class="out" id="o9_${i}_${d}_e"></td>`).join('')+'</tr>'}
+  $('#t9').innerHTML=h+'</tbody></table>';
+  // paso 5
+  h='<table class="tb"><thead><tr><th rowspan="2">Penetración [in]</th><th rowspan="2">[mm]</th>'+S.molds.map(m=>`<th colspan="3">Molde ${m.id}</th>`).join('')+'</tr><tr>'+S.molds.map(()=>'<th>Lectura L</th><th>P calculada [lb]</th><th>Planilla [lb]</th>').join('')+'</tr></thead><tbody>';
+  S.pens.forEach((pn,k)=>{const bold=(k==3||k==4)?' style="font-weight:700"':'';h+=`<tr><td${bold}>${ft(pn)}</td><td>${fmt(pn*25.4,2)}</td>`+S.molds.map((m,i)=>`<td>${inp(`molds.${i}.dial.${k}`,1)}</td><td class="out" id="o10_${i}_${k}"></td><td class="sheet">${fmt(SHEET.load[i][k],1)}</td>`).join('')+'</tr>'});
+  $('#t10').innerHTML=h+'</tbody></table>';
+  // pestañas
+  const ml=S.molds.map(m=>`Molde ${m.id} · ${m.blows} golpes`);
+  tabs('#tb6','s6','m',ml);tabsC('#tb6','s6');
+  tabs('#tb7','s7','m',ml);tabsC('#tb7','s7');
+  tabs('#tb8','s8','m',ml);tabs('#tb9','s9','m',ml);tabs('#tb12','s12','m',ml);tabs('#tb13','s13','m',ml);
+}
+function tabs(sel,key,field,labels){
+  const host=$(sel);const html=labels.map((l,i)=>`<button type="button" data-k="${key}" data-f="${field}" data-v="${i}">${l}</button>`).join('');
+  host.insertAdjacentHTML('beforeend',html);
+}
+function tabsC(sel,key){
+  $(sel).insertAdjacentHTML('beforeend',COND.map((l,i)=>`<button type="button" data-k="${key}" data-f="c" data-v="${i}">${l}</button>`).join(''));
+}
+
+/* ===================== ACTUALIZACIÓN ===================== */
+function setT(id,t){const e=document.getElementById(id);if(e)e.textContent=t}
+function setH(id,t){const e=document.getElementById(id);if(e)e.innerHTML=t}
+function update(){
+  R=calc(S,OPT);
+  $$('button[data-k]').forEach(b=>b.classList.toggle('on',SEL[b.dataset.k][b.dataset.f]===+b.dataset.v));
+  $('#ck13').checked=OPT.corr;$('#ckP').checked=OPT.corr;
+  upd6();upd7();upd8();upd9();upd10();upd11();upd12();upd13();upd14();upd15();upd16();upd17();updPanel();
+}
+function upd6(){
+  R.molds.forEach((r,i)=>[0,1].forEach(c=>{setT(`o6_${i}_${c}_mh`,fmt(r.cond[c].mh,0));setT(`o6_${i}_${c}_gh`,fmt(r.cond[c].gh,3))}));
+  $$('tr[data-r6]').forEach(tr=>tr.classList.toggle('sel',tr.dataset.r6===`${SEL.s6.m}_${SEL.s6.c}`));
+  const {m,c}=SEL.s6,d=R.molds[m].cond[c],md=S.molds[m];
+  setH('d6a',`W<sub>h</sub> = ${nn(md.mhm[c])} − ${nn(md.molde[c])}<br>γ<sub>h</sub> = ${nn(d.mh)} ÷ ${nn(md.vol[c])}`);
+  setH('d6b',`W<sub>h</sub> = ${fmt(d.mh,0)} g<br>γ<sub>h</sub> = ${fmt(d.gh,3)} g/cm³`);
+}
+function upd7(){
+  R.molds.forEach((r,i)=>[0,1].forEach(c=>{const d=r.cond[c];setT(`o7_${i}_${c}_ww`,fmt(d.ww,1));setT(`o7_${i}_${c}_ws`,fmt(d.ws,1));setT(`o7_${i}_${c}_w`,fmt(d.w,2))}));
+  $$('tr[data-r7]').forEach(tr=>tr.classList.toggle('sel',tr.dataset.r7===`${SEL.s7.m}_${SEL.s7.c}`));
+  const {m,c}=SEL.s7,d=R.molds[m].cond[c],t=S.molds[m].tara[c];
+  setH('d7a',`W<sub>w</sub> = ${nn(t.ht)} − ${nn(t.st)}<br>W<sub>s</sub> = ${nn(t.st)} − ${nn(t.t)}<br>w = ${nn(d.ww)} ÷ ${nn(d.ws)} × 100`);
+  setH('d7b',`W<sub>w</sub> = ${fmt(d.ww,1)} g · W<sub>s</sub> = ${fmt(d.ws,1)} g<br>w = ${fmt(d.w,2)} %`);
+}
+function upd8(){
+  R.molds.forEach((r,i)=>{setT(`o8_${i}_gh`,fmt(r.cond[0].gh,3));setT(`o8_${i}_w`,fmt(r.cond[0].w,2));setT(`o8_${i}_gd`,fmt(r.cond[0].gd,3));setT(`o8_${i}_cp`,fmt(r.comp,2));setT(`o8_${i}_gd2`,fmt(r.cond[1].gd,3))});
+  $$('tr[data-r8]').forEach(tr=>tr.classList.toggle('sel',+tr.dataset.r8===SEL.s8.m));
+  const m=SEL.s8.m,r=R.molds[m],d=r.cond[0];
+  setH('d8a',`γ<sub>d</sub> = ${fmt(d.gh,3)} ÷ (1 + ${fmt(d.w,2)}/100)<br>Comp. = ${fmt(d.gd,3)} ÷ ${nn(S.gdmax)} × 100`);
+  setH('d8b',`γ<sub>d</sub> = ${fmt(d.gd,3)} g/cm³<br>Compactación = ${fmt(r.comp,2)} %`);
+  setT('d8n','Los cálculos usan valores sin redondear; por eso al dividir las cifras mostradas puede aparecer una diferencia en el segundo decimal.');
+  const ymin=Math.min(85,Math.floor(Math.min(...R.molds.map(r=>r.comp))-2)), ymax=Math.max(102,Math.ceil(Math.max(...R.molds.map(r=>r.comp))+1));
+  $('#c8').innerHTML=chart({w:420,h:300,x:[0,3],y:[ymin,ymax],xt:[],label:'Compactación por molde',xl:'Molde (golpes por capa)',yl:'Compactación [%]',m:{l:56,r:14,t:14,b:46},
+    body:(X,Y,g)=>{let s='';[95,100].forEach(v=>{if(v>=ymin&&v<=ymax)s+=`<line x1="${g.m.l}" x2="${g.m.l+g.iw}" y1="${Y(v)}" y2="${Y(v)}" stroke="#c0392b" stroke-dasharray="5 4"/><text x="${g.m.l+g.iw-4}" y="${Y(v)-4}" text-anchor="end" class="lb" fill="#c0392b">${v} %</text>`});
+      R.molds.forEach((r,i)=>{const x=X(i+0.5),w=g.iw/3*0.55;const top=Y(r.comp),base=Y(ymin);s+=`<rect x="${x-w/2}" y="${top}" width="${w}" height="${base-top}" fill="${MC[i]}" opacity="${i===m?1:.55}"/><text x="${x}" y="${top-5}" text-anchor="middle" class="lb" fill="#17283b">${fmt(r.comp,1)}</text><text x="${x}" y="${base+15}" text-anchor="middle" class="tk">${r.id} (${r.blows})</text>`});return s}});
+}
+function upd9(){
+  R.molds.forEach((r,i)=>r.expDL.forEach((dl,d)=>{setT(`o9_${i}_${d}_dl`,fmt(dl,2));setT(`o9_${i}_${d}_e`,fmt(r.exp[d],3))}));
+  const m=SEL.s9.m,r=R.molds[m],md=S.molds[m],d=4;
+  setH('d9a',`ΔL = (${nn(md.expRead[d])} − ${nn(md.expRead[0])}) × ${nn(S.divMm)}<br>Exp. = ${fmt(r.expDL[d],2)} ÷ ${nn(S.h)} × 100`);
+  setH('d9b',`ΔL = ${fmt(r.expDL[d],2)} mm<br>Expansión (día 4) = ${fmt(r.exp[d],3)} % ≈ ${fmt(r.exp[d],2)} %`);
+  const ymax=Math.max(0.03,niceMax(Math.max(...R.molds.map(r=>r.expFinal))*1.2));
+  $('#c9').innerHTML=chart({w:420,h:290,x:[0,4],y:[0,ymax],xt:[0,1,2,3,4],label:'Expansión contra tiempo',xl:'Tiempo [días]',yl:'Expansión [%]',
+    body:(X,Y)=>R.molds.map((r,i)=>`<path d="${pathD(r.exp.map((v,k)=>({x:k,y:v})),X,Y)}" fill="none" stroke="${MC[i]}" stroke-width="2.4" ${i===m?'':'opacity=".6"'}/>`+r.exp.map((v,k)=>`<circle cx="${X(k)}" cy="${Y(v)}" r="3.5" fill="${MC[i]}"><title>Molde ${r.id}, día ${k}: ${fmt(v,3)} %</title></circle>`).join('')).join('')+`<g class="lb">${R.molds.map((r,i)=>`<text x="${X(0.1)}" y="${Y(ymax)+14+i*14}" fill="${MC[i]}">● Molde ${r.id}</text>`).join('')}</g>`});
+}
+function upd10(){
+  R.molds.forEach((r,i)=>r.P.forEach((p,k)=>setT(`o10_${i}_${k}`,fmt(p,1))));
+  setT('cvP',fmt(loadFromDial(S.free.dial,S),1)+' lb');
+  const pts=[];R.molds.forEach((r,i)=>S.molds[i].dial.forEach((L,k)=>pts.push({L,P:SHEET.load[i][k],i})));
+  const Lmax=Math.max(...pts.map(p=>p.L))*1.08,Pmax=niceMax(Math.max(...pts.map(p=>p.P))*1.05);
+  $('#c10').innerHTML=chart({w:420,h:300,x:[0,Lmax],y:[0,Pmax],label:'Calibración del anillo',xl:'Lectura del dial L [div]',yl:'Carga P [lb]',
+    body:(X,Y)=>`<line x1="${X(0)}" y1="${Y(Math.max(0,S.ringB))}" x2="${X(Lmax)}" y2="${Y(S.ringA*Lmax+S.ringB)}" stroke="#c0392b" stroke-width="2"/>`+pts.map(p=>`<circle cx="${X(p.L)}" cy="${Y(p.P)}" r="4" fill="${MC[p.i]}"><title>Molde ${R.molds[p.i].id}: L=${p.L}, P planilla=${p.P} lb</title></circle>`).join('')+`<text x="${X(Lmax*0.04)}" y="${Y(Pmax*0.93)}" class="lb" fill="#c0392b">— P = ${nn(S.ringA)}·L ${S.ringB<0?'−':'+'} ${nn(Math.abs(S.ringB))}</text><text x="${X(Lmax*0.04)}" y="${Y(Pmax*0.86)}" class="lb" fill="#5a6e85">● puntos de la planilla</text>`});
+}
+function upd11(){
+  const x=+$('#sl11').value;setT('ol11',ft(x)+' in');
+  const ymax=niceMax(Math.max(...R.molds.map(r=>Math.max(...r.ys)))*1.05);
+  $('#c11').innerHTML=chart({w:620,h:380,x:[0,0.5],y:[0,ymax],xt:[0,0.1,0.2,0.3,0.4,0.5],label:'Curvas carga penetración',xl:'Penetración [in]',yl:'Carga [lb]',
+    body:(X,Y,g)=>{let s='';R.molds.forEach((r,i)=>{const pts=r.xs.map((v,k)=>({x:v,y:r.ys[k]}));s+=`<path d="${pathD(pts,X,Y)}" fill="none" stroke="${MC[i]}" stroke-width="2.4"/>`+pts.slice(1).map(p=>`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="3" fill="${MC[i]}"><title>Molde ${r.id}: ${ft(p.x)} in → ${fmt(p.y,1)} lb</title></circle>`).join('');
+      [0.1,0.2].forEach(v=>{const xx=v+r.c;s+=`<line x1="${X(xx)}" x2="${X(xx)}" y1="${Y(0)}" y2="${Y(interp(r.xs,r.ys,xx))}" stroke="${MC[i]}" stroke-dasharray="4 3"/><circle cx="${X(xx)}" cy="${Y(interp(r.xs,r.ys,xx))}" r="5" fill="#fff" stroke="${MC[i]}" stroke-width="2.4"/>`})});
+      s+=`<line x1="${X(x)}" x2="${X(x)}" y1="${g.m.t}" y2="${g.m.t+g.ih}" stroke="#7a4fa0" stroke-width="1.5"/>`;
+      s+=`<g class="lb">${R.molds.map((r,i)=>`<text x="${X(0.02)}" y="${g.m.t+16+i*15}" fill="${MC[i]}">● Molde ${r.id} · ${r.blows} golpes</text>`).join('')}</g>`;return s}});
+  $('#t11').innerHTML='<thead><tr><th>Molde</th><th>P [lb]</th></tr></thead><tbody>'+R.molds.map((r,i)=>`<tr><td style="color:${MC[i]};font-weight:700">${r.id}</td><td class="out">${fmt(interp(r.xs,r.ys,x),1)}</td></tr>`).join('')+'</tbody>';
+}
+function upd12(){
+  const m=SEL.s12.m,r=R.molds[m];
+  setH('d12a',`P<sub>0,1″</sub> = ${fmt(r.P01,1)} lb → σ = ${fmt(r.P01,1)} ÷ ${nn(S.area)} = ${fmt(r.P01/S.area,1)} lb/in²<br>CBR<sub>0,1″</sub> = ${fmt(r.P01/S.area,1)} ÷ ${nn(S.std01)} × 100<br>P<sub>0,2″</sub> = ${fmt(r.P02,1)} lb → σ = ${fmt(r.P02/S.area,1)} lb/in²<br>CBR<sub>0,2″</sub> = ${fmt(r.P02/S.area,1)} ÷ ${nn(S.std02)} × 100`);
+  setH('d12b',`CBR<sub>0,1″</sub> = ${fmt(r.cbr01,1)} %<br>CBR<sub>0,2″</sub> = ${fmt(r.cbr02,1)} %`);
+  let h='<table class="tb"><thead><tr><th>Molde</th><th>Golpes</th><th>P 0,1″ [lb]</th><th>P 0,2″ [lb]</th><th>CBR 0,1″ [%]</th><th>planilla</th><th>CBR 0,2″ [%]</th><th>planilla</th><th>Mayor</th></tr></thead><tbody>';
+  R.molds.forEach((q,i)=>{h+=`<tr${i===m?' class="sel"':''}><td><b>${q.id}</b></td><td>${q.blows}</td><td class="out">${fmt(q.P01,1)}</td><td class="out">${fmt(q.P02,1)}</td><td class="out">${fmt(q.cbr01,1)}</td><td class="sheet">${fmt(SHEET.cbr01[i],1)}</td><td class="out">${fmt(q.cbr02,1)}</td><td class="sheet">${fmt(SHEET.cbr02[i],1)}</td><td>${q.flag02?'<span class="chip warn">0,2″</span>':'<span class="chip ok">0,1″</span>'}</td></tr>`});
+  $('#t12').innerHTML=h+'</tbody></table>';
+  const fl=R.molds.filter(q=>q.flag02).map(q=>q.id);
+  setH('n12',fl.length?`<b>Atención:</b> en el/los molde(s) ${fl.join(' y ')} el CBR a 0,2″ supera al de 0,1″. La planilla adopta igualmente el de 0,1″; la norma pide repetir el ensayo y, si se confirma, usar el de 0,2″. Aquí seguimos la planilla para poder compararla.`:'En todos los moldes el CBR a 0,1″ es el mayor: se adopta el de 0,1″ sin más verificación.');
+}
+function upd13(){
+  const m=SEL.s13.m,r=R.molds[m],k=r.corr;
+  const ymax=niceMax(Math.max(...r.ys)*0.8);
+  $('#c13').innerHTML=chart({w:520,h:340,x:[0,0.3],y:[0,ymax],xt:[0,0.05,0.1,0.15,0.2,0.25,0.3],label:'Corrección de origen',xl:'Penetración [in]',yl:'Carga [lb]',
+    body:(X,Y,g)=>{const pts=r.xs.map((v,i)=>({x:v,y:r.ys[i]}));const xe=k.xb+0.04,ye=k.slope*(xe-k.x0);
+      let s=`<path d="${pathD(pts,X,Y)}" fill="none" stroke="${MC[m]}" stroke-width="2.4"/>`+pts.slice(1).map(p=>`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="3" fill="${MC[m]}"/>`).join('');
+      s+=`<line x1="${X(Math.max(0,k.x0))}" y1="${Y(0)}" x2="${X(xe)}" y2="${Y(ye)}" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>`;
+      s+=`<line x1="${X(k.xa)}" y1="${Y(k.ya)}" x2="${X(k.xb)}" y2="${Y(k.yb)}" stroke="#c0392b" stroke-width="4.5"/>`;
+      s+=`<circle cx="${X(k.c)}" cy="${Y(0)}" r="5" fill="#c0392b"/><text x="${X(k.c)+8}" y="${Y(0)-8}" class="lb" fill="#c0392b">c = ${nn(k.c)} in</text>`;
+      [0.1,0.2].forEach(v=>{s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${Y(0)}" y2="${Y(interp(r.xs,r.ys,v))}" stroke="#9aa7b5" stroke-dasharray="3 3"/><line x1="${X(v+k.c)}" x2="${X(v+k.c)}" y1="${Y(0)}" y2="${Y(interp(r.xs,r.ys,v+k.c))}" stroke="#7a4fa0" stroke-dasharray="4 3"/>`});
+      s+=`<text x="${X(0.145)}" y="${g.m.t+16}" class="lb" fill="#9aa7b5">┆ 0,1 y 0,2 originales</text><text x="${X(0.145)}" y="${g.m.t+30}" class="lb" fill="#7a4fa0">┆ 0,1 + c y 0,2 + c</text>`;return s}});
+  let h='<table class="tb"><thead><tr><th>Molde</th><th>Pendiente máx. [lb/in]</th><th>Origen corregido c [in]</th><th>CBR 0,1″ sin corr.</th><th>CBR 0,1″ con corr.</th><th>CBR 0,2″ sin corr.</th><th>CBR 0,2″ con corr.</th></tr></thead><tbody>';
+  R.molds.forEach((q,i)=>{h+=`<tr${i===m?' class="sel"':''}><td><b>${q.id}</b></td><td class="out">${fmt(q.corr.slope,0)}</td><td class="out">${fmt(q.corr.c,4)}</td><td class="out">${fmt(q.cbr01raw,1)}</td><td class="out">${fmt(q.cbr01c,1)}</td><td class="out">${fmt(q.cbr02raw,1)}</td><td class="out">${fmt(q.cbr02c,1)}</td></tr>`});
+  $('#t13').innerHTML=h+'</tbody></table>';
+}
+function upd14(){
+  const pc=+$('#sl14').value;setT('ol14',ft(pc)+' %');
+  const g=S.gdmax*pc/100,a=interpPairs(R.pairs,'cbr',g),b=interpPairs(R.pairs,'exp',g);
+  const gmin=Math.min(...R.pairs.map(p=>p.g),S.gdmax*0.9)-0.02,gmax=S.gdmax+0.03;
+  const mk=(key,xl,xmax,fmtv)=>chart({w:420,h:310,x:[0,xmax],y:[gmin,gmax],label:xl+' contra peso unitario seco',xl:xl,yl:'γd [g/cm³]',m:{l:62},
+    body:(X,Y,gg)=>{let s='';[[95,'#c0392b'],[97,'#c99100'],[100,'#2e8b57']].forEach(([v,c])=>{const yy=Y(S.gdmax*v/100);s+=`<line x1="${gg.m.l}" x2="${gg.m.l+gg.iw}" y1="${yy}" y2="${yy}" stroke="${c}" stroke-dasharray="5 4"/><text x="${gg.m.l+gg.iw-3}" y="${yy-3}" text-anchor="end" class="lb" fill="${c}">${v} %</text>`});
+      const pts=R.pairs.map(p=>({x:p[key],y:p.g}));s+=`<path d="${pathD(pts,X,Y)}" fill="none" stroke="#1b5fa6" stroke-width="2.2"/>`+R.pairs.map(p=>`<circle cx="${X(p[key])}" cy="${Y(p.g)}" r="4.5" fill="#1b5fa6"><title>Molde ${p.id}: γd=${fmt(p.g,3)}, ${fmtv(p[key])}</title></circle><text x="${X(p[key])+7}" y="${Y(p.g)+4}" class="lb" fill="#17283b">M${p.id}</text>`).join('');
+      const vv=key==='cbr'?a.v:b.v;s+=`<line x1="${gg.m.l}" x2="${X(vv)}" y1="${Y(g)}" y2="${Y(g)}" stroke="#7a4fa0" stroke-width="1.6"/><line x1="${X(vv)}" x2="${X(vv)}" y1="${Y(g)}" y2="${gg.m.t+gg.ih}" stroke="#7a4fa0" stroke-width="1.6"/><circle cx="${X(vv)}" cy="${Y(g)}" r="6" fill="#fff" stroke="#7a4fa0" stroke-width="2.6"/>`;return s}});
+  $('#c14a').innerHTML=mk('cbr','CBR [%]',niceMax(Math.max(...R.pairs.map(p=>p.cbr))*1.1),v=>fmt(v,1)+' %');
+  $('#c14b').innerHTML=mk('exp','Expansión [%]',niceMax(Math.max(0.03,...R.pairs.map(p=>p.exp))*1.4),v=>fmt(v,3)+' %');
+  setH('r14',`Al <b>${ft(pc)} %</b> de γ<sub>d,máx</sub>: γ<sub>d</sub> = ${fmt(g,3)} g/cm³ → <b>CBR = ${fmt(a.v,1)} %</b> · <b>Expansión = ${fmt(b.v,2)} %</b>${a.extrap?' <span class="chip bad">fuera del rango ensayado</span>':''}`);
+  let h='<table class="tb"><thead><tr><th>% de γ<sub>d,máx</sub></th><th>γ<sub>d</sub> objetivo</th><th>CBR calculado</th><th>CBR planilla</th><th>Δ</th><th>Exp. calculada [%]</th><th>Exp. planilla [%]</th></tr></thead><tbody>';
+  [100,97,95].forEach(v=>{const d=R.design[v];h+=`<tr><td><b>${v} %</b></td><td class="out">${fmt(d.g,4)}</td><td class="out">${fmt(d.cbr,1)}</td><td class="sheet">${fmt(SHEET.dcbr[v],1)}</td><td>${fmt(d.cbr-SHEET.dcbr[v],1)}</td><td class="out">${fmt(d.exp,3)}</td><td class="sheet">${fmt(SHEET.dexp[v],2)}</td></tr>`});
+  $('#t14').innerHTML=h+'</tbody></table>';
+}
+function bandRow(tbl,val){$$('tr[data-lo]',tbl).forEach(tr=>tr.classList.toggle('hit',val>=+tr.dataset.lo&&val<+tr.dataset.hi))}
+function upd15(){
+  const d=R.design[95];
+  bandRow($('#cls15'),d.cbr);bandRow($('#cls15e'),d.exp);
+  const cl=d.cbr<3?'muy mala':d.cbr<7?'pobre a regular':d.cbr<20?'regular':d.cbr<50?'buena':'excelente';
+  const ec=d.exp<1?'baja':d.exp<3?'moderada':'alta';
+  setH('i15',`Al 95 % de γ<sub>d,máx</sub> el CBR de diseño es <b>${fmt(d.cbr,1)} %</b> (capacidad de soporte <b>${cl}</b>) y la expansión es <b>${fmt(d.exp,2)} %</b> (<b>${ec}</b>). Es un suelo granular (GM, A-1-a) sin plasticidad: gana soporte con la densidad y casi no cambia de volumen al saturarse.`);
+}
+function cmpChip(calc,sheet,dec,tol){
+  const u=Math.pow(10,-dec);const rc=+calc.toFixed(dec);const diff=Math.abs(rc-sheet);
+  if(!Number.isFinite(calc))return '<span class="chip bad">✗</span>';
+  if(diff<u*0.5)return '<span class="chip ok">✓</span>';
+  if(diff<=(tol||u)*1.0001)return '<span class="chip warn">≈</span>';
+  return '<span class="chip bad">✗</span>';
+}
+function upd16(){
+  const mod=JSON.stringify(S)!==JSON.stringify(DEF)||OPT.corr;
+  setH('v16note',mod?'<b>Datos modificados.</b> La comparación con la planilla ya no aplica: restablece los datos (botón superior) para ver la verificación original.':'<b>Datos originales:</b> todos los valores recalculados se comparan con los impresos en la planilla G-01.');
+  const rows=[
+    ['γ<sub>h</sub> antes [g/cm³]',i=>R.molds[i].cond[0].gh,i=>SHEET.gh[i][0],3],
+    ['w antes [%]',i=>R.molds[i].cond[0].w,i=>SHEET.w[i][0],2],
+    ['γ<sub>d</sub> antes [g/cm³]',i=>R.molds[i].cond[0].gd,i=>SHEET.gd[i][0],3],
+    ['Compactación [%]',i=>R.molds[i].comp,i=>SHEET.comp[i],2],
+    ['γ<sub>h</sub> después [g/cm³]',i=>R.molds[i].cond[1].gh,i=>SHEET.gh[i][1],3],
+    ['w después [%]',i=>R.molds[i].cond[1].w,i=>SHEET.w[i][1],2],
+    ['γ<sub>d</sub> después [g/cm³]',i=>R.molds[i].cond[1].gd,i=>SHEET.gd[i][1],3],
+    ['Expansión día 4 [%]',i=>R.molds[i].expFinal,i=>SHEET.exp[i],2],
+    ['Carga a 0,1″ [lb]',i=>R.molds[i].P01,i=>SHEET.load[i][3],1,0.1],
+    ['CBR 0,1″ [%]',i=>R.molds[i].cbr01,i=>SHEET.cbr01[i],1],
+    ['CBR 0,2″ [%]',i=>R.molds[i].cbr02,i=>SHEET.cbr02[i],1]];
+  let h='<table class="tb"><thead><tr><th>Magnitud</th>'+R.molds.map(r=>`<th>Molde ${r.id}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(([lab,f,s,dec,tol])=>{h+=`<tr><td style="text-align:left">${lab}</td>`+R.molds.map((r,i)=>`<td><b style="font-family:var(--mono)">${fmt(f(i),dec)}</b> <span style="color:var(--steel);font-family:var(--mono)">(${fmt(s(i),dec)})</span> ${cmpChip(f(i),s(i),dec,tol)}</td>`).join('')+'</tr>'});
+  h+='<tr><td style="text-align:left"><b>Diseño</b> (100 / 97 / 95 %)</td><td colspan="3" style="text-align:left">'+[100,97,95].map(v=>`CBR ${v} %: <b style="font-family:var(--mono)">${fmt(R.design[v].cbr,1)}</b> <span style="color:var(--steel);font-family:var(--mono)">(${fmt(SHEET.dcbr[v],1)})</span> ${cmpChip(R.design[v].cbr,SHEET.dcbr[v],1,0.5)}`).join(' &nbsp; ')+'</td></tr>';
+  $('#t16').innerHTML=h+'</tbody></table>';
+}
+function classOf(c){return c<3?'muy mala':c<7?'pobre a regular':c<20?'regular':c<50?'buena':'excelente'}
+function upd17(){
+  const f=S.free,a=f.p01/S.area/S.std01*100,b=f.p02/S.area/S.std02*100;
+  setH('f17',`CBR<sub>0,1″</sub> = ${fmt(a,1)} % (${classOf(a)})<br>CBR<sub>0,2″</sub> = ${fmt(b,1)} %${b>a?'<br>⚠ 0,2″ &gt; 0,1″: verificar con la norma.':''}`);
+}
+function updPanel(){
+  let h='<div class="kv" style="margin-bottom:6px"><span>γ<sub>d,máx</sub></span><b>'+fmt(S.gdmax,3)+' g/cm³</b><span>w óptima</span><b>'+fmt(S.wopt,1)+' %</b></div>';
+  h+='<table class="mini"><tr><th>Molde</th><th>γd</th><th>%comp</th><th>CBR</th><th>Exp.</th></tr>'+R.molds.map(r=>`<tr><td>${r.id}</td><td>${fmt(r.cond[0].gd,3)}</td><td>${fmt(r.comp,1)}</td><td>${fmt(r.cbr01,1)}</td><td>${fmt(r.expFinal,2)}</td></tr>`).join('')+'</table>';
+  h+='<h3>Diseño</h3><table class="mini"><tr><th>%γd,máx</th><th>CBR</th><th>Exp.</th></tr>'+[100,97,95].map(v=>`<tr><td>${v}</td><td>${fmt(R.design[v].cbr,1)}</td><td>${fmt(R.design[v].exp,2)}</td></tr>`).join('')+'</table>';
+  if(OPT.corr)h+='<p class="legend"><b>Corrección de origen activa:</b> los CBR no coinciden con la planilla.</p>';
+  $('#pn').innerHTML=h;
+  const w=[...new Set(R.warn)];
+  $('#pw').innerHTML=w.length?w.map(t=>`<div class="warnl">⚠ ${t}</div>`).join(''):'<p class="legend">Sin avisos: los datos son físicamente coherentes.</p>';
+  const b=$('#wBadge');b.style.display=w.length?'inline-block':'none';b.textContent=w.length;
+}
+
+/* ===================== NAVEGACIÓN ===================== */
+const slides=$$('.slide');let cur=0;const shown=slides.map(()=>0);
+const frags=i=>$$('.frag',slides[i]);
+function applyFrags(i){frags(i).forEach((f,k)=>f.classList.toggle('on',k<shown[i]))}
+function go(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('active',k===cur));applyFrags(cur);bar();$('#stage').scrollTop=0;$('#idx').value=cur}
+function bar(){
+  const n=frags(cur).length;
+  $('#cnt').textContent=`Diapositiva ${cur+1} de ${slides.length}`+(n?` · bloque ${shown[cur]} de ${n}`:'');
+  const tot=slides.reduce((a,_,i)=>a+frags(i).length+1,0);let done=0;for(let i=0;i<cur;i++)done+=frags(i).length+1;done+=shown[cur]+1;
+  $('#prog').style.width=(done/tot*100)+'%';
+  $('#bPrev').disabled=cur===0&&shown[0]===0;$('#bNext').disabled=cur===slides.length-1&&shown[cur]>=n;
+}
+function next(){
+  const n=frags(cur).length;
+  if(shown[cur]<n){shown[cur]++;applyFrags(cur);const f=frags(cur)[shown[cur]-1];if(f&&f.scrollIntoView)f.scrollIntoView({block:'nearest',behavior:'smooth'});bar()}
+  else if(cur<slides.length-1)go(cur+1);
+}
+function prev(){
+  if(shown[cur]>0){shown[cur]--;applyFrags(cur);bar()}
+  else if(cur>0){go(cur-1);shown[cur]=frags(cur).length;applyFrags(cur);bar()}
+}
+$('#bNext').onclick=next;$('#bPrev').onclick=prev;
+$('#bAll').onclick=()=>{shown[cur]=frags(cur).length;applyFrags(cur);bar()};
+$('#idx').innerHTML=slides.map((s,i)=>`<option value="${i}">${i+1}. ${s.dataset.title}</option>`).join('');
+$('#idx').onchange=e=>go(+e.target.value);
+document.addEventListener('keydown',e=>{
+  if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();next()}
+  else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev()}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+});
+
+/* ===================== EVENTOS ===================== */
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.p){const v=t.value===''?NaN:parseFloat(t.value);setP(t.dataset.p,v);update()}
+  else if(t.id==='sl11'||t.id==='sl14')update();
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-k]');if(b){SEL[b.dataset.k][b.dataset.f]=+b.dataset.v;update();return}
+  const g=e.target.closest('[data-blk]');if(g)showBlock(g.dataset.blk);
+});
+$('#ck13').onchange=e=>{OPT.corr=e.target.checked;update()};
+$('#ckP').onchange=e=>{OPT.corr=e.target.checked;update()};
+$('#bPanel').onclick=()=>$('#drawer').classList.toggle('open');
+$('#bPrint').onclick=()=>window.print();
+function syncInputs(){$$('input[data-p]').forEach(i=>{i.value=getP(i.dataset.p)})}
+$('#bReset').onclick=()=>{S=clone(DEF);OPT.corr=false;syncInputs();update()};
+$('#bRet').onclick=()=>{$('#aRet').style.display='block'};
+const BLK={
+  A:['Bloque A · Identificación y clasificación','Proyecto, grupo (G-01) y muestra (P-20-1). La tabla trae LL e IP (aquí N.P., no plástico), clasificación SUCS (GM) y AASHTO (A-1-a, IG = 0), la humedad óptima (6,3 %) y la densidad máxima (2,179 g/cm³) del ensayo Proctor.',4],
+  B:['Bloque B · Humedad y peso unitario','Tres moldes (4, 5 y 6) con 56, 25 y 12 golpes por capa. Para cada uno se registra la masa antes de mojarse y después de la saturación, más las taras para obtener la humedad. Resultado: γh, γd y porcentaje de compactación.',5],
+  C:['Bloque C · Expansión','Lecturas diarias del extensómetro durante 4 días de saturación. La planilla las convierte a cm y a % de la altura de la muestra.',8],
+  D:['Bloque D · C.B.R.','Penetración en pulgadas y cm, lectura del anillo, carga en libras, carga corregida y CBR. Las filas de 0,1″ y 0,2″ (en negrita) son las que se usan.',9],
+  E:['Bloque E · Gráficas','En la segunda hoja: curva carga–penetración, CBR contra γd y expansión contra γd, con las lecturas al 95, 97 y 100 % de la densidad máxima.',10]
+};
+function showBlock(k){const [t,d,s]=BLK[k];$('#mapInfo').innerHTML=`<h3>${t}</h3><p>${d}</p><button class="btn" style="background:var(--soft)" type="button" onclick="go(${s});">Ir al paso correspondiente</button>`}
+$$('#svgMap [data-blk]').forEach(g=>{g.setAttribute('tabindex','0');g.setAttribute('role','button');g.addEventListener('keydown',e=>{if(e.key==='Enter')showBlock(g.dataset.blk)})});
+$$('.q').forEach(q=>{$$('input',q).forEach(i=>i.addEventListener('change',()=>{const ok=i.value===q.dataset.ans;const fb=$('.fb',q);fb.textContent=ok?'Correcto.':'Revisa el paso correspondiente e inténtalo de nuevo.';fb.style.color=ok?'var(--ok)':'var(--bad)'}))});
+function exportTxt(){
+  const L=['CBR · ejemplo G-01 · muestra P-20-1 (Caracollo–Colquiri)','Versión V1','',`γd,máx = ${fmt(S.gdmax,3)} g/cm³ · w óptima = ${fmt(S.wopt,1)} % · h = ${S.h} mm · división = ${S.divMm} mm · A = ${S.area} in²`,`Anillo: P = ${S.ringA}·L + ${S.ringB}`,`Corrección de origen: ${OPT.corr?'sí':'no'}`,'','Molde | golpes | γd antes | %comp | CBR 0,1 | CBR 0,2 | Exp. día 4'];
+  R.molds.forEach(r=>L.push(`${r.id} | ${r.blows} | ${fmt(r.cond[0].gd,3)} | ${fmt(r.comp,2)} | ${fmt(r.cbr01,1)} | ${fmt(r.cbr02,1)} | ${fmt(r.expFinal,3)}`));
+  L.push('','Diseño: % γd,máx | CBR | Exp.');[100,97,95].forEach(v=>L.push(`${v} | ${fmt(R.design[v].cbr,1)} | ${fmt(R.design[v].exp,2)}`));
+  const w=[...new Set(R.warn)];if(w.length){L.push('','Avisos:');w.forEach(t=>L.push('- '+t))}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.join('\n')],{type:'text/plain;charset=utf-8'}));a.download='CBR_G01_P-20-1_resultados.txt';document.body.appendChild(a);a.click();a.remove();
+}
+$('#bExp').onclick=exportTxt;
+
+/* ===================== ARRANQUE ===================== */
+build();update();go(0);
+</script>
+</body>
+</html>
